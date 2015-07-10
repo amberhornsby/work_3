@@ -6,6 +6,8 @@ Created on Mon Jul  6 14:33:35 2015
 """
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy
+print numpy.__version__
 ###############################################################################
 #10:10 Classifying galaxies and investigating evolution
 ###############################################################################
@@ -20,13 +22,13 @@ def red(Mr,colour):
 #true false array
 def TF_array(R,galaxy,bins_array):
     c = []
-    for i in bins_array:
+    for i in xrange(bins_array.shape[0]):
         #digitize calculates hist bins, in1d identifies where two arrays have 
         #same value
-        z = np.in1d(bins_array[np.digitize(R[galaxy],bins_array)],bins_array[i])
-        c.append(z)
+        z = np.where(np.in1d(bins_array[np.digitize(R[galaxy],bins_array)],
+                               bins_array[i]))
+        c.append(z[0])
     return np.asarray(c)
-#np.in1d(bins_array[np.digitize(R[red_bulgeless],bins_array)],bins_array[4])
 #Data Input####################################################################
 read_data = False
 if read_data:
@@ -100,8 +102,8 @@ red_just_not =  np.where(np.logical_and(red,just_not_cut))
 red_obvious =  np.where(np.logical_and(red,obvious_cut))
 red_dominant = np.where(np.logical_and(red,dominant_cut))
 #adding up all bulged galaxies
-red_bulged = np.logical_or(np.logical_and(red,obvious_cut),
-                   np.logical_and(red,dominant_cut))                 
+red_bulged = np.where(np.logical_or(np.logical_and(red,obvious_cut),
+                   np.logical_and(red,dominant_cut)) )    
 #red_bulged = np.where(np.logical_or(aa,np.logical_and(red,just_not_cut)))
 #test plot red galaxies########################################################
 plt.figure()
@@ -134,7 +136,7 @@ print "number of red dominant galaxies = %.2d" % a
 print "total number of galaxies in red bulge/bulgeless catagory = %.2d" % tot
 #plotting magnitude histograms#################################################
 bins = 24
-bins_array = np.linspace(-24,-12,num = 25)
+bins_array = np.linspace(-24,-12,num = 13)
 plt.figure()
 plt.subplot(121)
 plt.hist(R[red_bulgeless], bins=bins, normed = True, label = "bulgeless")
@@ -143,6 +145,65 @@ plt.subplot(122)
 plt.hist(R[red_bulged], bins=bins, normed = True, label = "bulged")
 plt.legend(loc="best")
 #extracting bulgeless data from bins ##########################################
-TF_array_bulgeless = TF_array(R,red_bulgeless,bins_array)
+TF_array_bulgeless = TF_array(R,red_bulgeless,bins_array)  
 #extracting bulged data from bins #############################################
 TF_array_bulged = TF_array(R,red_bulged, bins_array)
+a = []
+b = []
+plt.figure()
+for i in xrange(bins_array.shape[0]):
+    bulged_size = TF_array_bulged[i].shape[0]
+    bulgeless_size = TF_array_bulgeless[i].shape[0]
+    if np.logical_and(bulged_size>0,bulgeless_size>0):
+        if bulgeless_size<bulged_size:
+            bulgeless = TF_array_bulgeless[i]
+            bulged = np.random.choice(TF_array_bulged[i],
+                                      size = (bulgeless_size))
+            a.append(bulged)
+            b.append(bulgeless)
+            plt.plot(R[bulged],uminusr[bulged], "ro")
+            plt.plot(R[bulgeless],uminusr[bulgeless], "bo")
+        else:
+            bulged = TF_array_bulged[i]
+            bulgeless = np.random.choice(TF_array_bulgeless[i],
+                                         size = (bulged_size))
+            a.append(bulged)
+            b.append(bulgeless)    
+            plt.plot(R[bulged],uminusr[bulged], "ro")
+            plt.plot(R[bulgeless],uminusr[bulgeless], "bo")
+            
+plt.xlim(-16,-25)
+plt.ylim(0.5,4)
+plt.plot(R[bulged],uminusr[bulged], "ro", label = "bulged")
+plt.plot(R[bulgeless],uminusr[bulgeless], "bo",label = "bulgeless")
+plt.plot(g,gv,'g-', linewidth = 3, label = "green valley")
+plt.legend(loc="best")
+
+n = []   
+m = []
+for i in xrange(len(b)):
+    for j in (np.asarray(b)[i]):
+        n.append(R[red_bulgeless][j])
+        m.append(uminusr[red_bulgeless][j])
+need1 = np.asarray(n)
+need2 = np.asarray(m)
+
+o = []   
+q = []
+for i in xrange(len(a)):
+    for j in (np.asarray(a)[i]):
+        o.append(R[red_bulged][j])
+        q.append(uminusr[red_bulged][j])
+need3 = np.asarray(o)
+need4 = np.asarray(q)
+plt.figure()
+ax = plt.gca()
+ax.invert_xaxis()
+plt.xlim(-16,-25)
+plt.ylim(0.5,4)
+plt.plot(need3,need4, "ro", label = "bulged")
+plt.plot(need1,need2, "bo",label = "bulgeless")
+plt.plot(g,gv,'g-', linewidth = 3, label = "green valley")
+plt.legend(loc="best")
+plt.xlabel("Absolute R")
+plt.ylabel("U - R")
