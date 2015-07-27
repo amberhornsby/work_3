@@ -31,7 +31,7 @@ def TF_array(data,column,bins_array):
         c.append(z[0])
     return np.asarray(c)
 def index(bin1,galaxy,a,b,c,d,e,f,g,h,k,l,m,r_band,u_band,NUV,NUV_err,u_err,r_err,
-          dr8,ra,dec,redshift,fraction):
+          dr8,ra,dec,redshift, fraction):
     for i in xrange(len(bin1)):
         for j in (np.asarray(bin1)[i]):
             a.append(galaxy[j,r_band])
@@ -51,8 +51,8 @@ def index(bin1,galaxy,a,b,c,d,e,f,g,h,k,l,m,r_band,u_band,NUV,NUV_err,u_err,r_er
                                       np.asarray(g), np.asarray(h)))
     red_new = np.asarray(a)
     u_new = np.asarray(l)
-    fraction_new = np.asarray(m)
-    return fraction_new,u_new,red_new,bulgeless_final
+    fraction1 = np.asarray(m)
+    return fraction1, u_new,red_new,bulgeless_final
 #Data Input####################################################################
 read_data = False
 if read_data:
@@ -79,25 +79,27 @@ r_err = 287
 u_band = 280
 u_err = 285
 g_band = 281
-redshift = 278
+redshift1 = 278
 NUV = 304
 NUV_err = 305
 dr8 = 1
 ra = 3
 dec = 4
-bulgeless = 69
+bulgeless1 = 69
 dominant1 = 85
+faceon = 43
+disk1 = 21
 #selecting data ###############################################################
-disk = data[...,21]
-face_on = data[...,43]
-no_bulge = data[...,bulgeless]
+disk = data[...,disk1]
+face_on = data[...,faceon]
+no_bulge = data[...,bulgeless1]
 just_noticeable = data[...,75]
 obvious = data[...,81]
 dominant = data[...,dominant1]
 U = data[...,u_band]
 G = data[...,g_band]
 R = data[...,r_band]
-redshift = data[...,redshift]
+redshift = data[...,redshift1]
 #maths#########################################################################
 gminusr = G-R
 uminusr = U-R
@@ -201,8 +203,10 @@ bins_array = np.linspace(-24,-12,num = 13)
 plt.figure() #figure 3
 plt.subplot(121)
 plt.hist(R[red_bulgeless], bins=bins, normed = True, label = "bulgeless")
+plt.xlabel("R")
 plt.legend(loc="best")
 plt.subplot(122)
+plt.xlabel("R")
 plt.hist(R[red_bulged], bins=bins, normed = True, label = "bulged")
 plt.legend(loc="best")
 #extracting bulgeless data from bins ##########################################
@@ -239,16 +243,22 @@ t = []
 u = []
 v = []
 w = []
-bulgeless,u_bulgeless,redbulgelessfinal, bulgeless_final = index(b,NUV_bulgeless,n,m,o,p,
+#b = np.load('bulgeless_position.npy')
+#a = np.load('bulged_positions.npy')
+fraction2,u_bulgeless,redbulgelessfinal, bulgeless_final = index(b,NUV_bulgeless,n,m,o,p,
                                                        q,r,s,t,u,v,w,r_band,
                                                        u_band,NUV,NUV_err,
                                                        u_err,r_err,dr8,ra,dec,
-                                                       redshift,no_bulge)      
-#f = open('list_commands_bulgeless.txt', 'a')
-#b = bulgeless_final
-#for n in range(len(b)):
-#    f.write('python starpy.py '+str(b[n,0])+' '+str(b[n,1])+' '+str(b[n,2])+' '+str(b[n,3])+' '+str(b[n,4])+'  '+str(b[n,5].astype(int))+' '+str(b[n,6])+' '+str(b[n,7])+'\n')
-#f.close()                                                    
+                                                       redshift1,bulgeless1)      
+np.save('bulgeless_position.npy',b)
+np.save('bulged_positions.npy',a)
+np.savetxt('bulgeless_need.txt', bulgeless_final, delimiter = ',')
+np.savetxt('bulgeless_fraction.txt', fraction2, delimiter = ',')
+f = open('list_commands_bulgeless.txt', 'a')
+b = bulgeless_final
+for n in range(len(b)):
+    f.write('python starpy.py '+str(b[n,0])+' '+str(b[n,1])+' '+str(b[n,2])+' '+str(b[n,3])+' '+str(b[n,4])+'  '+str(b[n,5].astype(int))+' '+str(b[n,6])+' '+str(b[n,7])+'\n')
+f.close()                                                    
 n1 = []   
 m1 = []
 o1 = []  
@@ -259,17 +269,18 @@ s1 = []
 t1 = []
 u1 = []       
 v1 = []
-w1 = []
-                                
-bulged,u_bulged,redbulgedfinal, bulged_final = index(a,NUV_bulged,n1,m1,o1,p1,q1,r1,
+w1 = []                                
+fraction3,u_bulged,redbulgedfinal, bulged_final = index(a,NUV_bulged,n1,m1,o1,p1,q1,r1,
                                               s1,t1,u1,v1,w1,r_band,u_band,NUV,
                                               NUV_err,u_err, r_err,dr8,ra,dec,
-                                              redshift,dominant)
-#f = open('list_commands_bulged.txt', 'a')
-#b = bulged_final
-#for n in range(len(b)):
-#    f.write('python starpy.py '+str(b[n,0])+' '+str(b[n,1])+' '+str(b[n,2])+' '+str(b[n,3])+' '+str(b[n,4])+'  '+str(b[n,5].astype(int))+' '+str(b[n,6])+' '+str(b[n,7])+'\n')
-#f.close()                                               
+                                              redshift1,dominant1)
+f = open('list_commands_bulged.txt', 'a')
+b = bulged_final
+for n in range(len(b)):
+    f.write('python starpy.py '+str(b[n,0])+' '+str(b[n,1])+' '+str(b[n,2])+' '+str(b[n,3])+' '+str(b[n,4])+'  '+str(b[n,5].astype(int))+' '+str(b[n,6])+' '+str(b[n,7])+'\n')
+f.close()                                                
+np.savetxt('bulged_need.txt', bulged_final, delimiter = ',')   
+np.savetxt('bulged_fraction.txt', fraction3, delimiter = ',')                                           
 #test plotting - R,U-R#########################################################
 plt.figure() #figure 4 U-R,R
 ax = plt.gca()
@@ -289,16 +300,14 @@ ax.invert_xaxis()
 plt.plot(bulged_final[...,0],bulged_final[...,2], "ro", label = "bulged")
 plt.plot(bulgeless_final[...,0],bulgeless_final[...,2], "bo",
          label = "bulgeless")
-#plt.plot(g,gv,'g-', linewidth = 3, label = "green valley")
 plt.legend(loc="best")
 plt.ylabel("NUV-U")
 plt.xlabel("U - R")
 #test plotting - vote fraction vs redshift#####################################
-plt.figure() #figure 6 vote fraction, redshift
-ax = plt.gca()
-plt.plot(redbulgedfinal,bulged_final[...,0], "ro", label = "bulged")
-plt.plot(redbulgelessfinal,bulgeless_final[...,0], "bo",label = "bulgeless")
-plt.plot(g,gv,'g-', linewidth = 3, label = "green valley")
-plt.legend(loc="best")
-plt.xlabel("R")
-plt.ylabel("U - R")
+#plt.figure() #figure 6 vote fraction, redshift
+#ax = plt.gca()
+#plt.plot(bulged_final[...,4],fraction3, "ro", label = "bulged")
+#plt.plot(bulgeless_final[...,4],fraction2, "bo",label = "bulgeless")
+#plt.legend(loc="best")
+#plt.xlabel("R")
+#plt.ylabel("U - R")
